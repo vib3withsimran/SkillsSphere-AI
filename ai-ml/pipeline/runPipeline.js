@@ -16,12 +16,12 @@ export async function runPipeline({
   jobDescription = "",
 }) {
     // ADD — safe wrapper for all evaluator calls
-  function safeEval(name, fn, fallback = { score: 0, error: true }) {
+  async function safeEval(name, fn, fallback = { score: 0, error: true  }) {
     try {
-      return fn();
+      return await fn();
     } catch (err) {
       console.error(`[runPipeline] Evaluator "${name}" failed:`, err);
-      return fallback;
+      return { ...fallback, name };
     }
   }
 
@@ -45,6 +45,7 @@ export async function runPipeline({
 
   const isJDProvided = !!(jobDescription && jobDescription.trim().length > 0);
   const evaluations = [];
+
   const resumeText = resumeData.resumeText || "";
 
   // 🟢 Skill Match
@@ -125,10 +126,13 @@ export async function runPipeline({
   );
   evaluations.push(techStandard);
 
+
   // 🧠 Aggregate
   const result = aggregateResults(evaluations, isJDProvided);
   if (!result) throw new Error("[runPipeline] aggregateResults returned empty");
   const { score, breakdown } = result;
+
+  const failedEvaluators = evaluations.filter(e => e.error).map(e => e.name);
 
   // 🎯 Gap Analysis
   const gapAnalysis = gapAnalyzer({
@@ -149,9 +153,12 @@ export async function runPipeline({
     experienceMatch,
   });
 
+
   return {
     score,
     breakdown,
+    degraded: failedEvaluators.length > 0,
+    failedEvaluators,
     skillMatch,
     keywordMatch,
     experienceMatch,
