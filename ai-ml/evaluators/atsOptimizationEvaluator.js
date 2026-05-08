@@ -12,6 +12,8 @@ export const atsOptimizationEvaluator = ({ resumeData, weight = 0.15 }) => {
     email,
     phone,
     linkedin,
+    github,
+    portfolio,
     resumeText = ""
   } = resumeData;
 
@@ -24,10 +26,23 @@ export const atsOptimizationEvaluator = ({ resumeData, weight = 0.15 }) => {
     summary: /summary|profile|objective|about me/gi.test(resumeText),
   };
 
-  const contactResults = {
-    email: !!email,
-    phone: !!phone,
-    linkedin: !!linkedin,
+  // Fallback to regex detection from resumeText when structured fields are missing
+  const emailFromText = /[\w.+-]+@[\w-]+\.[a-z]{2,}/i.test(resumeText); 
+  const phoneFromText = /(\+\d{1,3}[\s-]?)?\d[\d\s-]{7,}/.test(resumeText); 
+  const portfolioFromText = /(portfolio|https?:\/\/(www\.)?[\w-]+\.[a-z]{2,}[^\s]*)/i.test(resumeText);
+  const linkedinUrlDetected = /linkedin\.com\/in\/[\w-]+|linkedin\.com\/company\/[\w-]+/i.test(resumeText);
+  const githubUrlDetected = /github\.com\/[\w-]+/i.test(resumeText);
+  const hasLinkedinPlaceholder = /\blinkedin\b/i.test(resumeText) && !linkedinUrlDetected;
+  const hasGithubPlaceholder = /\bgithub\b/i.test(resumeText) && !githubUrlDetected;
+  const linkedinFromText = linkedinUrlDetected || hasLinkedinPlaceholder;
+  const githubFromText = githubUrlDetected || hasGithubPlaceholder;
+
+  const contactResults = { 
+    email: !!email || emailFromText,
+    phone: !!phone || phoneFromText,
+    linkedin: !!linkedin || linkedinFromText, 
+    github: !!github || githubFromText,
+    portfolio: !!portfolio || portfolioFromText,
   };
 
   // Scoring
@@ -55,6 +70,16 @@ export const atsOptimizationEvaluator = ({ resumeData, weight = 0.15 }) => {
     feedback.push(`Missing contact info: ${missingContact.join(", ")}.`);
     suggestions.push(`Ensure your ${missingContact.join(" and ")} are visible at the top.`);
   }
+
+  if (hasLinkedinPlaceholder || hasGithubPlaceholder) {
+  feedback.push(
+    "Embedded hyperlinks detected. Some ATS systems may not extract hidden profile URLs correctly."
+  );
+
+  suggestions.push(
+    "Use visible LinkedIn/GitHub URLs instead of embedded hyperlinks for better ATS compatibility."
+  );
+}
 
   // Formatting Hygiene (Bonus/Penalty)
   const hasTables = /<table|\[table\]/gi.test(resumeText);
@@ -87,4 +112,3 @@ export const atsOptimizationEvaluator = ({ resumeData, weight = 0.15 }) => {
     }
   };
 };
-
