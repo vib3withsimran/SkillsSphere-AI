@@ -2,13 +2,13 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { Briefcase, Info } from "lucide-react";
 import Navbar from "../../../shared/landing/Navbar";
-import LoadingState from "../../../shared/components/LoadingState";
 import ErrorState from "../../../shared/components/ErrorState";
 import EmptyState from "../../../shared/components/EmptyState";
 import { JobViewerCard, Pagination } from "../../../shared/components";
 import JobFilters from "../components/JobFilters";
 import JobApplyForm from "../components/JobApplyForm";
 import { getJobs, applyToJob, getMyAppliedJobIds } from "../services/jobService";
+import JobCardSkeleton from "../components/JobCardSkeleton";
 
 const JobBoardPage = () => {
   const { token, user } = useSelector((state) => state.auth);
@@ -122,11 +122,15 @@ const JobBoardPage = () => {
               </h2>
             </div>
 
+
+            {/* Display skeleton cards while jobs are loading */}
             {loading ? (
-              <div className="min-h-[400px] flex items-center justify-center bg-slate-900/30 rounded-2xl border border-white/5 backdrop-blur-sm">
-                <LoadingState message="Searching for opportunities..." />
+              <div className="grid grid-cols-1 gap-5">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <JobCardSkeleton key={index} />
+                ))}
               </div>
-            ) : error ? (
+            ): error ? (
               <ErrorState message={error} onRetry={() => fetchJobs(filters)} />
             ) : jobs.length === 0 ? (
               <EmptyState
