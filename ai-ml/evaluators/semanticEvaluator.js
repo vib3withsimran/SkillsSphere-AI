@@ -1,54 +1,59 @@
-import OpenAI from "openai";
+/**
+ * Semantic Evaluator — Hugging Face Inference API
+ *
+ * Uses the sentence-transformers/all-MiniLM-L6-v2 model via the
+ * HF sentence-similarity pipeline to compute semantic similarity
+ * between a resume and a job description.
+ *
+ * Requires: HF_API_TOKEN environment variable (free tier)
+ */
 
-
-const cosineSimilarity = (a, b) => {
-  if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length || a.length === 0) {
-    throw new Error("Invalid embeddings for cosine similarity");
-  }
-
-  let dot = 0;
-  let magA = 0;
-  let magB = 0;
-
-  for (let i = 0; i < a.length; i += 1) {
-    dot += a[i] * b[i];
-    magA += a[i] * a[i];
-    magB += b[i] * b[i];
-  }
-
-  const denominator = Math.sqrt(magA) * Math.sqrt(magB);
-  if (!denominator) return 0;
-
-  return dot / denominator;
-};
+const HF_MODEL_URL =
+  "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-MiniLM-L6-v2/pipeline/sentence-similarity";
 
 const roundToTwo = (value) => Number(value.toFixed(2));
 
-const getOpenAIClient = () => {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error("OPENAI_API_KEY environment variable is not set");
+/**
+ * Calls the HF sentence-similarity pipeline directly.
+ * Returns a similarity score between 0 and 1.
+ */
+const computeSimilarity = async (sourceText, compareText) => {
+  const hfToken = process.env.HF_API_TOKEN;
+  if (!hfToken) {
+    throw new Error("HF_API_TOKEN environment variable is not set");
   }
 
-  return new OpenAI({ apiKey });
-};
-
-const generateEmbedding = async (text) => {
-  if (!text || typeof text !== "string" || text.trim().length === 0) {
-    throw new Error("Invalid text input for embedding generation");
-  }
-
-  const openai = getOpenAIClient();
-  const response = await openai.embeddings.create({
-    model: "text-embedding-3-small",
-    input: text.trim(),
+  const response = await fetch(HF_MODEL_URL, {
+    headers: {
+      Authorization: `Bearer ${hfToken}`,
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+    body: JSON.stringify({
+      inputs: {
+        source_sentence: sourceText.trim(),
+        sentences: [compareText.trim()],
+      },
+    }),
   });
 
-  if (!response.data || response.data.length === 0 || !response.data[0].embedding) {
-    throw new Error("Failed to generate embedding from OpenAI API");
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error(`[semanticEvaluator] HF API error (${response.status}):`, errorBody);
+    throw new Error(`Hugging Face API returned ${response.status}: ${response.statusText}`);
   }
 
-  return response.data[0].embedding;
+  const data = await response.json();
+
+  // HF sentence-similarity returns an array of scores, one per sentence
+  if (!Array.isArray(data) || data.length === 0) {
+    console.error("[semanticEvaluator] Unexpected response:", JSON.stringify(data).slice(0, 200));
+    throw new Error("Invalid response format from Hugging Face API");
+  }
+
+  const similarity = data[0];
+  console.log(`[semanticEvaluator] ✅ Similarity computed: ${roundToTwo(similarity * 100)}%`);
+  return similarity;
 };
 
 
@@ -91,16 +96,8 @@ export const semanticEvaluator = async ({ resumeText = "", jobDescription = "" }
     };
   }
 
-  const trimmedResume = resumeText.trim();
-  const trimmedJob = jobDescription.trim();
-
   try {
-    const [resumeEmbedding, jobEmbedding] = await Promise.all([
-      generateEmbedding(trimmedResume),
-      generateEmbedding(trimmedJob),
-    ]);
-
-    const similarity = cosineSimilarity(resumeEmbedding, jobEmbedding);
+    const similarity = await computeSimilarity(resumeText, jobDescription);
     const normalized = Math.max(0, Math.min(1, similarity));
     const score = roundToTwo(normalized * 100);
 
@@ -115,7 +112,8 @@ export const semanticEvaluator = async ({ resumeText = "", jobDescription = "" }
         similarityRaw: similarity,
       },
       meta: {
-        model: "text-embedding-3-small"
+        model: "sentence-transformers/all-MiniLM-L6-v2",
+        provider: "huggingface"
       }
     };
   } catch (error) {

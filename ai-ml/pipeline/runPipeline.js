@@ -125,7 +125,7 @@ export async function runPipeline({
   evaluations.push(experienceMatch);
 
   // 🌀 Semantic Match
-  const hasOpenAIKey = !!process.env.OPENAI_API_KEY;
+  const hasHFKey = !!process.env.HF_API_TOKEN;
   let semanticMatch;
 
   if (!isJDProvided) {
@@ -134,7 +134,7 @@ export async function runPipeline({
       name: "semanticMatch",
       message: "No job description provided",
     };
-  } else if (!hasOpenAIKey) {
+  } else if (!hasHFKey) {
     semanticMatch = {
       score: 0,
       name: "semanticMatch",

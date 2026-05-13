@@ -46,7 +46,7 @@ SkillSphere AI aims to simplify the path from learning to hiring by giving users
 
 3. **Resume vs Job Description Matcher**  
    ML-assisted comparison between candidate profile and role requirements.
-   - **Semantic Resume vs Job Description Matching** — Embedding-based semantic similarity scoring using OpenAI embeddings
+   - **Semantic Resume vs Job Description Matching** — Embedding-based semantic similarity scoring using Hugging Face Inference API (all-MiniLM-L6-v2, free tier)
    - Complements keyword overlap with contextual alignment detection
    - Cosine similarity comparison for conceptually related phrases (e.g., "workflow orchestration" vs "pipeline automation")
 
@@ -233,8 +233,8 @@ cp .env.example .env
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 
-# AI/ML Configuration (Required for semantic matching)
-OPENAI_API_KEY=your_openai_api_key
+# AI/ML Configuration (Required for semantic matching — free tier)
+HF_API_TOKEN=your_hugging_face_token
 
 ## 🔐 Google OAuth Setup
 - `EMAIL_SERVICE_MODE=console` (Use "smtp" for real emails)
@@ -267,7 +267,7 @@ cp .env.example .env
 - `PORT` (backend default: `5000`)
 - `JWT_SECRET` (required for JWT registration)
 - `JWT_EXPIRES_IN` (optional, default is `7d`)
-- `OPENAI_API_KEY` (required for semantic resume-to-job-description matching)
+- `HF_API_TOKEN` (free — required for semantic resume-to-job-description matching, get at https://huggingface.co/settings/tokens)
 - `VITE_API_URL=http://localhost:5000`
 
 ## 🔐 Google OAuth Setup
@@ -279,7 +279,7 @@ cp .env.example .env
 - `EMAIL_PORT=2525`
 - `EMAIL_USER=your_smtp_username`
 - `EMAIL_PASS=your_smtp_password`
-- `OPENAI_API_KEY=sk-...` (Required for semantic resume matching)
+- `HF_API_TOKEN=hf_...` (Free — required for semantic resume matching)
 1. Open Google Cloud Console.
 2. Create/select your project.
 3. Configure OAuth consent screen.

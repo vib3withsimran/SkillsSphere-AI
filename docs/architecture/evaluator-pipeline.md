@@ -139,7 +139,7 @@ Traditional keyword matching fails when:
    - <40: "Low semantic alignment..."
 
 ### API Error Handling
-- Missing `OPENAI_API_KEY` → Throws error for pipeline handling
+- Missing `HF_API_TOKEN` → Throws error for pipeline handling
 - API rate limits/timeouts → Throws error for pipeline handling
 - Invalid text inputs → Returns safe 0 score with explanatory feedback
 
