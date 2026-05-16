@@ -5,6 +5,7 @@ import AnalysisResult from "../components/AnalysisResult";
 import DragDropUpload from "../components/DragDropUpload";
 import JobDescriptionInput from "../components/JobDescriptionInput";
 import { analyzeResume } from "../services/resumeService";
+import { syncRoadmap } from "../../roadmap/services/roadmapService";
 import { FileText, Sparkles } from "lucide-react";
 
 const ResumeAnalyzerPage = () => {
@@ -31,6 +32,13 @@ const ResumeAnalyzerPage = () => {
     try {
       const result = await analyzeResume(selectedFile, jobDescription);
       setResult(result);
+      
+      // Sync Roadmap if classification and suggestions exist
+      if (result.classification?.level && result.gapAnalysis?.suggestions) {
+        const topics = result.gapAnalysis.suggestions.map(s => s.text).slice(0, 5);
+        await syncRoadmap(result.classification.level, topics);
+      }
+      
       success("Resume analyzed successfully.");
     } catch (err) {
       const msg = err.message || "Failed to analyze resume. Please try again.";

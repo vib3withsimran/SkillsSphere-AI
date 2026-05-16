@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { CheckCircle2, Rocket, Target, Award, ArrowRight } from "lucide-react";
+import { CheckCircle2, Circle, Clock, Rocket, Target, Award, ArrowRight } from "lucide-react";
 import Navbar from "../../../shared/landing/Navbar";
 import { getMyRoadmap, updateTopicStatus } from "../services/roadmapService";
 import LoadingState from "../../../shared/components/LoadingState";
@@ -43,9 +43,9 @@ const RoadmapPage = () => {
     }
   };
 
-  if (loading) return <LoadingState title="Mapping your career path..." description="Gathering insights from your profile" />;
+  if (loading) return <LoadingState message="Mapping your career path..." />;
 
-  if (!roadmap || !roadmap.roadmap) {
+  if (!roadmap) {
     return (
       <div className="min-h-screen bg-dark-bg text-white">
         <Navbar />
@@ -100,6 +100,7 @@ const RoadmapPage = () => {
 
         {/* Roadmap Visualization */}
         <div className="relative space-y-12 pl-4 md:pl-0">
+          {/* Vertical Line */}
           <div className="absolute left-[23px] top-4 bottom-4 w-1 bg-gradient-to-b from-primary via-primary/50 to-transparent rounded-full hidden md:block md:left-1/2 md:-ml-0.5 opacity-20"></div>
 
           {roadmap.roadmap.map((topic, index) => {
@@ -109,13 +110,16 @@ const RoadmapPage = () => {
             return (
               <div key={topic._id} className={`relative flex items-center gap-8 ${isLeft ? "md:flex-row" : "md:flex-row-reverse"} animate-slide-up`} style={{ animationDelay: `${index * 100}ms` }}>
                 
+                {/* Visual Dot on the line */}
                 <div className={`absolute left-[19px] md:left-1/2 md:-ml-3 w-6 h-6 rounded-full border-4 ${isCompleted ? 'bg-primary border-primary shadow-[0_0_15px_rgba(99,102,241,0.5)]' : 'bg-dark-bg border-border'} z-20 transition-all duration-500`}>
                    {isCompleted && <CheckCircle2 className="w-full h-full text-white p-0.5" />}
                 </div>
 
+                {/* Content Card */}
                 <div className={`w-full md:w-1/2 ${isLeft ? "md:pr-16" : "md:pl-16"}`}>
                   <div className={`group p-6 bg-surface/40 border ${isCompleted ? 'border-primary/30' : 'border-border'} rounded-[2rem] hover:border-primary/50 transition-all hover:bg-surface/60 shadow-lg relative overflow-hidden`}>
                     
+                    {/* Background Glow */}
                     {isCompleted && <div className="absolute -top-12 -right-12 w-24 h-24 bg-primary/10 rounded-full blur-[40px] pointer-events-none"></div>}
 
                     <div className="flex items-start justify-between mb-4">
@@ -157,12 +161,14 @@ const RoadmapPage = () => {
                   </div>
                 </div>
 
+                {/* Empty spacer for grid */}
                 <div className="hidden md:block w-1/2"></div>
               </div>
             );
           })}
         </div>
 
+        {/* Graduation / Job Ready Note */}
         <div className="mt-20 p-12 bg-gradient-to-br from-primary/20 to-secondary/10 border border-primary/20 rounded-[3rem] text-center relative overflow-hidden group shadow-2xl">
            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5 pointer-events-none"></div>
            <div className="relative z-10">
