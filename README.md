@@ -106,18 +106,40 @@ To simplify setup, you can now run the entire project using root-level scripts.
 
 ### Install all dependencies
 
+```bash
 npm run install-all
+```
 
-### Run the project (client + server together)
+This installs:
 
+- Root dependencies
+- Client dependencies
+- Server dependencies
+- Python microservice dependencies (creates `interview-ai-service/venv` and downloads spaCy model)
+
+### Run everything (client + server + Python microservice) from root
+
+```bash
 npm run dev
+```
 
 This will start:
 
 - Frontend (client)
 - Backend (server)
+- Interview AI Service (Python microservice on port 8000)
 
-For **AI Mock Interview** real-time evaluation, start the Python microservice too (see “Interview AI Service” in the Manual Setup section).
+### One command (first-time or fresh clone)
+
+```bash
+npm run quickstart
+```
+
+### Optional: run only client + server (no Python service)
+
+```bash
+npm run dev:web
+```
 
 > ⚠️ Backend requires environment variables to run properly. Refer to the Environment Setup section below.
 
@@ -188,7 +210,6 @@ SkillSphere-AI/
 
 ---
 
-````md
 ## For Open-Source Contributors
 
 If you want to contribute, start by understanding:
@@ -228,7 +249,6 @@ cd client
 npm install
 npm run dev
 ```
-````
 
 ### Server
 
@@ -263,7 +283,7 @@ pip install -r requirements.txt
 python -m spacy download en_core_web_sm
 
 # Run the API (default port 8000)
-uvicorn main:app --reload --port 8000
+python -m uvicorn main:app --reload --port 8000
 ```
 
 Health check: `http://localhost:8000/health`

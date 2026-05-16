@@ -1,3 +1,10 @@
+import os
+
+# Prevent Transformers from importing TensorFlow / Keras (not needed here).
+# This avoids crashes on environments that have Keras 3 installed without tf-keras.
+os.environ.setdefault("TRANSFORMERS_NO_TF", "1")
+os.environ.setdefault("TRANSFORMERS_NO_FLAX", "1")
+
 from sentence_transformers import SentenceTransformer, util
 
 # Load model once at startup

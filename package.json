@@ -4,10 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "install-all": "cd client && npm install && cd ../server && npm install && cd ../ai-ml && npm install",
-    "client": "cd client && npm run dev",
-    "server": "cd server && npm run dev",
-    "dev": "concurrently \"npm run client\" \"npm run server\""
+    "install-all": "node scripts/install-all.js",
+    "dev": "node scripts/dev-all.js",
+    "dev:web": "concurrently \"cd client && npm run dev\" \"cd server && npm run dev\"",
+    "quickstart": "node scripts/quickstart.js",
+    "python:setup": "node scripts/python-setup.js",
+    "python:run": "node scripts/python-run.js"
   },
   "dependencies": {
     "google-auth-library": "^10.6.2",

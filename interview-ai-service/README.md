@@ -28,11 +28,13 @@ pip install -r requirements.txt
 python -m spacy download en_core_web_sm
 ```
 
+> If you see `No module named spacy`, ensure your virtual environment is activated and re-run `pip install -r requirements.txt` (Windows: `venv\Scripts\activate`).
+
 ## Running
 
 ```bash
 # Start the server (default port 8000)
-uvicorn main:app --reload --port 8000
+python -m uvicorn main:app --reload --port 8000
 ```
 
 The service will be available at `http://localhost:8000`.
@@ -40,13 +42,15 @@ The service will be available at `http://localhost:8000`.
 ## API Endpoints
 
 ### Health Check
-```
+
+```http
 GET /health
 Response: { "status": "ok", "service": "interview-ai-service" }
 ```
 
 ### Transcribe Audio
-```
+
+```http
 POST /api/transcribe
 Content-Type: multipart/form-data
 Body: audio file (webm, wav, mp3, ogg, m4a)
@@ -58,7 +62,8 @@ Response:
 ```
 
 ### Evaluate Answer
-```
+
+```http
 POST /api/evaluate
 Content-Type: application/json
 Body:
@@ -90,34 +95,34 @@ Response:
 
 ## Services
 
-| Service | File | Purpose |
-|---------|------|---------|
-| Whisper STT | `services/whisper_service.py` | Transcribes audio files to text using faster-whisper |
+| Service          | File                           | Purpose                                                                 |
+| ---------------- | ------------------------------ | ----------------------------------------------------------------------- |
+| Whisper STT      | `services/whisper_service.py`  | Transcribes audio files to text using faster-whisper                    |
 | Semantic Scoring | `services/semantic_service.py` | Calculates cosine similarity between student answer and expected answer |
-| NLP Analysis | `services/nlp_service.py` | Detects expected concepts in transcript using spaCy + keyword matching |
-| Communication | `services/nlp_service.py` | Analyzes filler words, sentence structure, vocabulary diversity |
+| NLP Analysis     | `services/nlp_service.py`      | Detects expected concepts in transcript using spaCy + keyword matching  |
+| Communication    | `services/nlp_service.py`      | Analyzes filler words, sentence structure, vocabulary diversity         |
 
 ## Environment Variables
 
-| Variable | Default | Description |
-|---|---|---|
-| `WHISPER_MODEL_SIZE` | `base` | Whisper model size: `tiny`, `base`, `small`, `medium`, `large-v3` |
+| Variable             | Default | Description                                                       |
+| -------------------- | ------- | ----------------------------------------------------------------- |
+| `WHISPER_MODEL_SIZE` | `base`  | Whisper model size: `tiny`, `base`, `small`, `medium`, `large-v3` |
 
 Use `tiny` for fast development, `base` or `small` for production.
 
 ## Scoring Breakdown
 
-| Score | Weight | How it's calculated |
-|-------|--------|---------------------|
-| **Technical** | Semantic similarity | Cosine similarity between student answer and expected answer embeddings |
-| **Communication** | NLP analysis | Based on filler word count, sentence structure, vocabulary diversity |
-| **Relevance** | Concept detection | Percentage of expected concepts found in the student's answer |
+| Score             | Weight              | How it's calculated                                                     |
+| ----------------- | ------------------- | ----------------------------------------------------------------------- |
+| **Technical**     | Semantic similarity | Cosine similarity between student answer and expected answer embeddings |
+| **Communication** | NLP analysis        | Based on filler word count, sentence structure, vocabulary diversity    |
+| **Relevance**     | Concept detection   | Percentage of expected concepts found in the student's answer           |
 
 ## Integration
 
 The Node.js backend calls this service via HTTP. Configure the URL in the server `.env`:
 
-```
+```env
 INTERVIEW_AI_URL=http://localhost:8000
 INTERVIEW_AI_TIMEOUT=10000
 INTERVIEW_AI_TRANSCRIBE_TIMEOUT=30000

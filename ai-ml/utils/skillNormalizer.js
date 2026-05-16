@@ -69,7 +69,7 @@ const SKILL_MAP = {
   'pydantic': 'pydantic',
   'cryptography': 'cryptography',
   'crypto': 'cryptography',
-  'steganography': 'steganography'
+  'steganography': 'steganography',
   // Others
   'dotnet': 'dotnet',
   '.net': 'dotnet',

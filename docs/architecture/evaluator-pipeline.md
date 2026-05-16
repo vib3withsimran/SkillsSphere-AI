@@ -6,7 +6,7 @@ The resume-to-job-description matching system uses a **hybrid evaluation pipelin
 
 ## Pipeline Flow
 
-```
+```text
 Input Texts (Resume + Job Description)
     ↓
 ┌─────────────────┐
@@ -41,6 +41,7 @@ Input Texts (Resume + Job Description)
 ## Evaluator Details
 
 ### 1. Skill Match Evaluator
+
 - **Purpose:** Exact skill overlap between resume and job requirements
 - **Weight:** 0.50 (50%)
 - **Input:** `resumeSkills[]`, `jobSkills[]`
@@ -48,6 +49,7 @@ Input Texts (Resume + Job Description)
 - **File:** `ai-ml/evaluators/skillEvaluator.js`
 
 ### 2. Keyword Match Evaluator
+
 - **Purpose:** Keyword presence analysis from job description text
 - **Weight:** 0.10 (10%)
 - **Input:** `resumeText`, `jobDescription`
@@ -55,6 +57,7 @@ Input Texts (Resume + Job Description)
 - **File:** `ai-ml/evaluators/keywordEvaluator.js`
 
 ### 3. Experience Match Evaluator
+
 - **Purpose:** Years of experience comparison
 - **Weight:** 0.20 (20%)
 - **Input:** `candidateExperienceText`, `jobDescription`
@@ -62,6 +65,7 @@ Input Texts (Resume + Job Description)
 - **File:** `ai-ml/evaluators/experienceEvaluator.js`
 
 ### 4. Semantic Match Evaluator
+
 - **Purpose:** Semantic similarity using embedding vectors
 - **Weight:** 0.20 (20%)
 - **Input:** `resumeText`, `jobDescription`
@@ -75,10 +79,10 @@ Input Texts (Resume + Job Description)
 All evaluator weights are centralized in `ai-ml/config/weights.config.js`:
 
 ```javascript
-skill: 0.50      // 50%
-keyword: 0.10   // 10%
-experience: 0.20 // 20%
-semantic: 0.20   // 20%
+skill: 0.5; // 50%
+keyword: 0.1; // 10%
+experience: 0.2; // 20%
+semantic: 0.2; // 20%
 // Total: 1.0 (100%)
 ```
 
@@ -96,14 +100,17 @@ The pipeline (`ai-ml/pipeline/runPipeline.js`) provides:
 ## Integration Points
 
 ### Server Adapter Layer
+
 **File:** `server/src/modules/resumes/evaluatorAdapters.js`
 
 Wraps raw evaluators to conform to pipeline contract:
+
 - Adds `key`, `label`, `weightedScore`, `summary`, `details`, `meta`
 - Transforms raw evaluator output to `evaluatorResultSchema` format
 - Exports `resumeEvaluatorAdapters` array for pipeline consumption
 
 ### Controller Integration
+
 **File:** `server/src/modules/resumes/controller.js`
 
 ```javascript
@@ -123,12 +130,15 @@ const pipelineResult = await runPipeline({ evaluators, context });
 ## Semantic Evaluator Deep Dive
 
 ### Why Semantic Matching?
+
 Traditional keyword matching fails when:
+
 - Synonyms are used ("workflow orchestration" vs "pipeline automation")
 - Conceptual alignment exists without exact word overlap
 - Context matters more than keyword density
 
 ### How It Works
+
 1. **Text Embedding:** Resume and job description texts are converted to 1536-dimensional vectors using OpenAI embeddings
 2. **Cosine Similarity:** Vector angle similarity calculated (range: -1 to 1, typically 0 to 1 for semantic embeddings)
 3. **Normalization:** Similarity clamped to [0, 1] and scaled to [0, 100]
@@ -139,6 +149,7 @@ Traditional keyword matching fails when:
    - <40: "Low semantic alignment..."
 
 ### API Error Handling
+
 - Missing `HF_API_TOKEN` → Throws error for pipeline handling
 - API rate limits/timeouts → Throws error for pipeline handling
 - Invalid text inputs → Returns safe 0 score with explanatory feedback
@@ -153,6 +164,7 @@ Unit tests for each evaluator are located in `ai-ml/evaluators/__tests__/`:
 - `semanticEvaluator.test.js` (mocked OpenAI embeddings for deterministic CI)
 
 Pipeline tests in `ai-ml/pipeline/__tests__/`:
+
 - `runPipeline.test.js`
 - `evaluatorContract.test.js`
 - `aggregator.test.js`
@@ -160,6 +172,7 @@ Pipeline tests in `ai-ml/pipeline/__tests__/`:
 ## Future Enhancements
 
 Potential additions to the pipeline:
+
 - Education match evaluator
 - Domain-specific semantic models
 - Multi-language embedding support

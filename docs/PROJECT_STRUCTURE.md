@@ -95,6 +95,7 @@ Implemented:
   - `src/middleware/uploadResume.js`
 
   - `src/utils/parseResume.js`
+
 - Evaluator configuration:
   - `src/config/evaluatorConfig.js`
 - Static upload serving via `app.use("/uploads", ...)`
@@ -183,6 +184,5 @@ Scaffolded placeholders:
 
 - Empty folders intentionally contain `.gitkeep` so structure is versioned.
 - As implementation begins, add module-level README files where needed.
-
 
 - `job-matcher/` module now includes the Resume-First Job Recommendation UI with components for resume selection, match score, missing skills, and recommended jobs, following a modular and scalable structure.
