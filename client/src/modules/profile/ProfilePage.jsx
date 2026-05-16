@@ -29,6 +29,7 @@ import { useNavigate } from "react-router-dom";
 import { updateUserProfile, logout } from "../../features/auth/authSlice";
 import { updateProfile, deleteProfile, uploadAvatar, removeAvatar } from "./services/profileService";
 import LoadingState from "../../shared/components/LoadingState";
+import { getProtectedAssetUrl } from "../../utils/protectedAssetUrl";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -145,7 +146,7 @@ const DeleteModal = ({ onConfirm, onCancel, loading }) => (
 
 // ─── Avatar Editor ────────────────────────────────────────────────────────────
 
-const AvatarEditor = ({ user, roleConfig, onUpload, onRemove, uploading, isEditing }) => {
+const AvatarEditor = ({ user, roleConfig, onUpload, onRemove, uploading, isEditing, token }) => {
   const fileRef = useRef(null);
   const [preview, setPreview] = useState(null);
   const [pendingFile, setPendingFile] = useState(null);
@@ -194,7 +195,7 @@ const AvatarEditor = ({ user, roleConfig, onUpload, onRemove, uploading, isEditi
     onRemove();
   };
 
-  const displayPic = preview || user.profilePic;
+  const displayPic = preview || getProtectedAssetUrl(user.profilePic, token);
   const initials = getInitials(user.name || "");
   const hasPendingChange = Boolean(pendingFile);
 
@@ -555,6 +556,7 @@ const ProfilePage = () => {
                 onRemove={handleAvatarRemove}
                 uploading={avatarUploading}
                 isEditing={isEditing}
+                token={token}
               />
 
               {avatarError && (

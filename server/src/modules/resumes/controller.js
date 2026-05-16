@@ -17,6 +17,7 @@ import {
 import * as resumeService from "./service.js";
 import AnalysisHistory from "../../database/models/AnalysisHistory.js";
 import { verifyLinks } from "../../utils/linkVerifier.js";
+import { buildResumeFileUrl } from "../../utils/uploadPaths.js";
 
 const defaultDependencies = {
   parseResume,
@@ -61,7 +62,7 @@ export const uploadResume = asyncHandler(async (req, res, next) => {
     file: {
       originalName: req.file.originalname,
       storedName: req.file.filename,
-      path: `/uploads/${req.file.filename}`,
+      path: buildResumeFileUrl(req.file.filename),
       size: `${(req.file.size / 1024).toFixed(2)} KB`,
       mimeType: req.file.mimetype,
     },

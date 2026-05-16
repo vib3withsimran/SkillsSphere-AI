@@ -5,7 +5,6 @@ dotenv.config();
 
 import http from "http";
 import { Server } from "socket.io";
-import path from "path";
 import connectDB from "./src/database/db.js";
 import authRoutes from "./src/modules/auth/routes.js";
 import resumeRoutes from "./src/modules/resumes/routes.js";
@@ -15,6 +14,7 @@ import dashboardRoutes from "./src/modules/dashboard/routes.js";
 import classroomRoutes from "./src/modules/classrooms/routes.js";
 import userRoutes from "./src/modules/users/routes.js";
 import interviewRoutes from "./src/modules/interviews/routes.js";
+import fileRoutes from "./src/modules/files/routes.js";
 import { initClassroomSockets } from "./src/modules/classrooms/socket.js";
 import globalErrorHandler from "./src/middleware/errorMiddleware.js";
 import { logEvaluatorConfig } from "./src/config/evaluatorConfig.js";
@@ -38,7 +38,7 @@ setIO(io);
 app.use(cors());
 
 app.use(express.json());
-app.use("/uploads", express.static(path.resolve("src", "uploads")));
+// Uploads are NOT served publicly — use /api/files/* with auth (see files/routes.js)
 
 await connectDB();
 logEvaluatorConfig();
@@ -82,6 +82,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/classrooms", classroomRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/interviews", interviewRoutes);
+app.use("/api/files", fileRoutes);
 
 // Initialize Sockets
 initClassroomSockets(io);

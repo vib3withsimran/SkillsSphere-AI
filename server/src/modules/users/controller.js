@@ -3,6 +3,7 @@ import AppError from "../../utils/AppError.js";
 import asyncHandler from "../../utils/asyncHandler.js";
 import fs from "fs";
 import path from "path";
+import { buildAvatarFileUrl } from "../../utils/uploadPaths.js";
 
 /**
  * @desc    Update user profile details
@@ -44,7 +45,7 @@ export const uploadAvatar = asyncHandler(async (req, res, next) => {
   }
 
   const baseUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
-  const profilePic = `${baseUrl}/uploads/avatars/${req.file.filename}`;
+  const profilePic = `${baseUrl}${buildAvatarFileUrl(req.file.filename)}`;
 
   const updatedUser = await User.findByIdAndUpdate(
     req.user._id,
@@ -73,7 +74,11 @@ export const removeAvatar = asyncHandler(async (req, res, next) => {
   if (!user) return next(new AppError("User not found", 404));
 
   // Delete file from disk if it's a local upload
-  if (user.profilePic && user.profilePic.includes("/uploads/avatars/")) {
+  if (
+    user.profilePic &&
+    (user.profilePic.includes("/uploads/avatars/") ||
+      user.profilePic.includes("/api/files/avatars/"))
+  ) {
     const filename = path.basename(user.profilePic);
     const filePath = path.join(process.cwd(), "src", "uploads", "avatars", filename);
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
