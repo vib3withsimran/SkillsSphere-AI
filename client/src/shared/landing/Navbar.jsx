@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Home, FileText, LayoutDashboard, MessageSquare, LogIn, UserPlus, X, Menu, LogOut, User, ChevronDown, Briefcase, Moon, Sun, Sparkles, Rocket } from 'lucide-react';
+import { Home, FileText, LayoutDashboard, MessageSquare, LogIn, UserPlus, X, Menu, LogOut, User, ChevronDown, Briefcase, Moon, Sun, Sparkles, Rocket, Video } from 'lucide-react';
 import Button from './Button';
 import { logout } from '../../features/auth/authSlice';
 import { getProtectedAssetUrl } from '../../utils/protectedAssetUrl';
@@ -55,6 +55,8 @@ const Navbar = () => {
     { name: 'Home', path: '/', icon: <Home size={20} /> },
     ...(user?.role === 'recruiter' 
       ? [{ name: 'Manage Jobs', path: '/recruiter/jobs', icon: <Briefcase size={20} /> }]
+      : user?.role === 'tutor'
+      ? [{ name: 'Live Classrooms', path: '/classrooms', icon: <Video size={20} /> }]
       : [
           { name: 'Job Board', path: '/jobs', icon: <Briefcase size={20} /> },
           { name: 'Job Match', path: '/job-matcher', icon: <Sparkles size={20} /> },
@@ -63,7 +65,10 @@ const Navbar = () => {
         ]
     ),
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'Mock Interview', path: '/mock-interview', icon: <MessageSquare size={20} /> },
+    ...(user?.role === 'student'
+      ? [{ name: 'Mock Interview', path: '/mock-interview', icon: <MessageSquare size={20} /> }]
+      : []
+    ),
   ];
 
   const isActive = (path) => location.pathname === path;

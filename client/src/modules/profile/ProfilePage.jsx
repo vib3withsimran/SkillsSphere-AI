@@ -691,7 +691,7 @@ const ProfilePage = () => {
       </div>
 
         {/* ── Hero card ── */}
-        <Card className="mb-5 overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm mb-5 overflow-hidden">
           {/* Gradient banner */}
           <div
             className={`h-24 bg-gradient-to-r ${roleConfig.avatar} opacity-80 dark:opacity-60`}
