@@ -25,7 +25,7 @@ import { verifySocketToken } from "./src/middleware/authMiddleware.js";
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './src/config/swaggerConfig.js';
 import { validateEnv } from './src/config/validateEnv.js';
-
+import analyticsRoutes from "./src/modules/analytics/routes.js";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -101,6 +101,7 @@ app.use("/api/classrooms", classroomRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/interviews", interviewRoutes);
 app.use("/api/files", fileRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 initClassroomSockets(io);
 initNotificationSockets(io);
