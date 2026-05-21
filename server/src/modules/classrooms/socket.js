@@ -5,12 +5,13 @@ export function initClassroomSockets(io) {
     console.log(`Socket connected: ${socket.id}`);
 
     // Join a specific room
-    socket.on("join-room", ({ roomId }) => {
-      socket.join(roomId);
-      
-      // Store user info in socket instance to easily retrieve later
-      const user = socket.user; // Secure, derived from JWT
-      socket.data = { roomId, user };
+    socket.on("join-room", async ({ roomId }) => {
+      try {
+        socket.join(roomId);
+        
+        // Store user info in socket instance to easily retrieve later
+        const user = socket.user; // Secure, derived from JWT
+        socket.data = { roomId, user };
 
         // Validate session in database
         const session = await ClassroomSession.findOne({ roomId, status: "active" });
