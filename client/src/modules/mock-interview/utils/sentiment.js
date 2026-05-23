@@ -1,6 +1,51 @@
-import { SentimentIntensityAnalyzer } from 'vader-sentiment';
+// A lightweight, browser-safe sentiment intensity analyzer to replace server-only 'vader-sentiment'
+const POSITIVE_WORDS = new Set([
+  'great', 'excellent', 'good', 'awesome', 'perfect', 'wonderful', 'beautiful',
+  'strong', 'confident', 'easy', 'successful', 'success', 'happy', 'positive',
+  'best', 'amazing', 'effective', 'efficient', 'smart', 'improve', 'growth',
+  'clean', 'reliable', 'stable', 'fast', 'love', 'like', 'helpful', 'glad',
+  'creative', 'innovative', 'skillful', 'mastery', 'expert', 'quality', 'safe',
+  'secure', 'scalable', 'robust', 'optimize', 'productive', 'correct', 'right'
+]);
 
-const analyzer = new SentimentIntensityAnalyzer();
+const NEGATIVE_WORDS = new Set([
+  'bad', 'poor', 'weak', 'fail', 'failure', 'error', 'difficult', 'hard',
+  'unsuccessful', 'slow', 'unstable', 'unreliable', 'worst', 'issue', 'problem',
+  'bug', 'defect', 'negative', 'wrong', 'unhappy', 'sad', 'hate', 'worry',
+  'afraid', 'scared', 'break', 'crash', 'risk', 'danger', 'complex', 'mess',
+  'inefficient', 'flaw', 'harm', 'loss', 'waste', 'struggle', 'stuck', 'pain'
+]);
+
+class SimpleSentimentAnalyzer {
+  polarity_scores(text) {
+    if (!text) return { pos: 0, neg: 0, neu: 1, compound: 0 };
+    
+    const words = text.toLowerCase().match(/\b\w+\b/g) || [];
+    let posCount = 0;
+    let negCount = 0;
+    
+    words.forEach(word => {
+      if (POSITIVE_WORDS.has(word)) posCount++;
+      else if (NEGATIVE_WORDS.has(word)) negCount++;
+    });
+    
+    const total = posCount + negCount;
+    if (total === 0) {
+      return { pos: 0, neg: 0, neu: 1, compound: 0 };
+    }
+    
+    // Normalize compounds to a -1 to 1 range
+    const diff = posCount - negCount;
+    const compound = diff / Math.sqrt(diff * diff + 15);
+    const pos = posCount / words.length;
+    const neg = negCount / words.length;
+    const neu = 1 - (pos + neg);
+    
+    return { pos, neg, neu, compound };
+  }
+}
+
+const analyzer = new SimpleSentimentAnalyzer();
 
 const FILLER_WORDS = ['um', 'uh', 'like', 'you know', 'sort of', 'kind of'];
 

@@ -10,6 +10,8 @@ import NotificationsDropdown from '../components/NotificationsDropdown';
 import { getUnreadCount } from '../../features/notifications/notificationsSlice';
 
 const Navbar = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { isAuthenticated, user, token } = useSelector((state) => state.auth);
   const [avatarSrc, setAvatarSrc] = useState(null);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -33,8 +35,6 @@ const Navbar = () => {
       setAvatarSrc(null);
     }
   }, [user?.profilePic, token]);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
   
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNavMenuOpen, setIsNavMenuOpen] = useState(false);
