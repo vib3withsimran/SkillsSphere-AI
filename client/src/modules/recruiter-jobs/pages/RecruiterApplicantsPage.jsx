@@ -63,6 +63,7 @@ const RecruiterApplicantsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
   const [statusFilter, setStatusFilter] = useState('');
+  const [sortBy, setSortBy] = useState('matchScore');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -70,7 +71,7 @@ const RecruiterApplicantsPage = () => {
     try {
       const [jobData, appsData] = await Promise.all([
         getJobPostingById(jobId, token),
-        getJobApplications(jobId, token, statusFilter)
+        getJobApplications(jobId, token, statusFilter, sortBy)
       ]);
       setJob(jobData.job);
       setApplicants(appsData.applications || []);
@@ -79,7 +80,7 @@ const RecruiterApplicantsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [jobId, token, statusFilter]);
+  }, [jobId, token, statusFilter, sortBy]);
 
   useEffect(() => {
     fetchData();
@@ -133,25 +134,40 @@ const RecruiterApplicantsPage = () => {
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center gap-2 p-1.5 bg-slate-900/40 border border-white/5 rounded-2xl overflow-x-auto whitespace-nowrap md:flex-wrap">
-          {filterStatuses.map((status) => {
-            const isActive = statusFilter === status.value;
-            const dotColor = dotStyles[status.value || "all"];
-            return (
-              <button
-                key={status.value || "all"}
-                onClick={() => setStatusFilter(status.value)}
-                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 shrink-0 ${
-                  isActive
-                    ? "bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)] border border-blue-500/30"
-                    : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
-                }`}
-              >
-                <span className={`w-2 h-2 rounded-full ${dotColor} ${isActive ? 'animate-pulse' : ''}`} />
-                {status.label}
-              </button>
-            );
-          })}
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+          <div className="flex items-center gap-2 p-1.5 bg-slate-900/40 border border-white/5 rounded-2xl overflow-x-auto whitespace-nowrap md:flex-wrap">
+            {filterStatuses.map((status) => {
+              const isActive = statusFilter === status.value;
+              const dotColor = dotStyles[status.value || "all"];
+              return (
+                <button
+                  key={status.value || "all"}
+                  onClick={() => setStatusFilter(status.value)}
+                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 shrink-0 ${
+                    isActive
+                      ? "bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)] border border-blue-500/30"
+                      : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${dotColor} ${isActive ? 'animate-pulse' : ''}`} />
+                  {status.label}
+                </button>
+              );
+            })}
+          </div>
+          
+          <div className="flex items-center gap-2 shrink-0 bg-slate-900/40 border border-white/5 rounded-2xl p-1.5">
+            <span className="text-sm font-medium text-slate-400 pl-3">Sort by:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="bg-transparent text-sm font-medium text-white outline-none cursor-pointer pr-4 py-2 border-none ring-0 appearance-none"
+            >
+              <option value="matchScore" className="bg-slate-900">Top Matches</option>
+              <option value="newest" className="bg-slate-900">Newest First</option>
+              <option value="oldest" className="bg-slate-900">Oldest First</option>
+            </select>
+          </div>
         </div>
 
         {/* Content */}
@@ -169,15 +185,24 @@ const RecruiterApplicantsPage = () => {
           />
         ) : (
           <div className="grid grid-cols-1 gap-4">
-            {applicants.map((app) => (
+            {applicants.map((app, index) => {
+              const isTopCandidate = sortBy === 'matchScore' && app.aiMatchScore >= 85;
+              const rank = sortBy === 'matchScore' ? index + 1 : null;
+              
+              return (
               <div 
                 key={app._id}
-                className={`group border transition-all duration-300 rounded-2xl overflow-hidden ${
+                className={`group border transition-all duration-300 rounded-2xl overflow-hidden relative ${
                   expandedId === app._id 
                     ? "bg-slate-900/80 border-blue-500/30 shadow-2xl" 
-                    : "bg-slate-900/40 border-white/5 hover:border-white/10 hover:bg-slate-900/60"
+                    : isTopCandidate
+                      ? "bg-slate-900/40 border-amber-500/30 hover:border-amber-400/50 hover:bg-slate-900/60 shadow-[0_0_15px_rgba(245,158,11,0.1)]"
+                      : "bg-slate-900/40 border-white/5 hover:border-white/10 hover:bg-slate-900/60"
                 }`}
               >
+                {isTopCandidate && (
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500"></div>
+                )}
                 {/* Applicant Summary Row */}
                 <div 
                   className="p-6 cursor-pointer"
@@ -185,6 +210,16 @@ const RecruiterApplicantsPage = () => {
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex items-center gap-4 min-w-0">
+                      {rank && (
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 border ${
+                          rank === 1 ? "bg-amber-500/20 text-amber-400 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]" :
+                          rank === 2 ? "bg-slate-300/20 text-slate-300 border-slate-300/30" :
+                          rank === 3 ? "bg-orange-700/20 text-orange-400 border-orange-700/30" :
+                          "bg-slate-800 text-slate-500 border-slate-700"
+                        }`}>
+                          #{rank}
+                        </div>
+                      )}
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/5 flex items-center justify-center shrink-0">
                         <span className="text-lg font-bold text-blue-400">
                           {app.applicant?.name?.charAt(0) || 'A'}
@@ -364,7 +399,8 @@ const RecruiterApplicantsPage = () => {
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

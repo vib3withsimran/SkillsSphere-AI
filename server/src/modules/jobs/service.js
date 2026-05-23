@@ -473,9 +473,11 @@ export const applyToJob = async (jobId, applicantId, options = {}) => {
  * Get all applications for a specific job (for recruiters)
  * @param {string} jobId - ID of the job
  * @param {string} recruiterId - ID of the recruiter (for ownership check)
+ * @param {string} status - Optional status filter
+ * @param {string} sortBy - Optional sort strategy ("matchScore", "newest", "oldest")
  * @returns {Promise<Array>} - List of applications
  */
-export const getJobApplications = async (jobId, recruiterId, status) => {
+export const getJobApplications = async (jobId, recruiterId, status, sortBy = "matchScore") => {
   const job = await JobPosting.findById(jobId);
   if (!job) {
     throw new AppError("Job not found", 404);
@@ -490,10 +492,20 @@ export const getJobApplications = async (jobId, recruiterId, status) => {
     query.status = status;
   }
 
+  let sortConfig = { createdAt: -1 };
+  if (sortBy === "matchScore") {
+    // Sort by match score descending, fallback to creation date
+    sortConfig = { aiMatchScore: -1, createdAt: -1 };
+  } else if (sortBy === "newest") {
+    sortConfig = { createdAt: -1 };
+  } else if (sortBy === "oldest") {
+    sortConfig = { createdAt: 1 };
+  }
+
   const applications = await JobApplication.find(query)
     .populate("applicant", "name email")
     .populate("resume", "fileName")
-    .sort({ createdAt: -1 });
+    .sort(sortConfig);
 
   return applications;
 };

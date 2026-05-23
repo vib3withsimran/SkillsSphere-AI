@@ -194,13 +194,16 @@ export const deleteJobPosting = async (id, token) => {
  * Fetch all applications for a specific job posting
  * @param {string} jobId - Job posting ID
  * @param {string} token - Auth bearer token
+ * @param {string} status - Optional status filter
+ * @param {string} sortBy - Optional sorting option
  * @returns {Promise<{success: boolean, applications: Array}>}
  */
-export const getJobApplications = async (jobId, token, status = "") => {
+export const getJobApplications = async (jobId, token, status = "", sortBy = "matchScore") => {
   try {
-    const url = status 
-      ? `/api/jobs/${jobId}/applications?status=${encodeURIComponent(status)}`
-      : `/api/jobs/${jobId}/applications`;
+    let url = `/api/jobs/${jobId}/applications?sortBy=${encodeURIComponent(sortBy)}`;
+    if (status) {
+      url += `&status=${encodeURIComponent(status)}`;
+    }
     const response = await apiRequest(url, { token });
     return {
       success: true,
