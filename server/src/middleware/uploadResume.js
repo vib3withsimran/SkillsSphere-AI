@@ -1,7 +1,9 @@
 import multer from "multer";
 import fs from "fs";
+import fsPromises from "fs/promises";
 import path from "path";
 import { validateResumeBufferSignatureSync } from "../utils/validateFileSignature.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
 const uploadDirectory = path.join(process.cwd(), "src", "uploads");
 
@@ -47,10 +49,10 @@ const upload = multer({
   },
 });
 
-export const removeUploadedFile = (filePath) => {
+export const removeUploadedFile = async (filePath) => {
   if (!filePath) return;
   try {
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    await fsPromises.unlink(filePath);
   } catch {
     // Best-effort cleanup after rejected upload
   }
@@ -66,10 +68,10 @@ const buildStoredFilename = (originalName) => {
 /**
  * Write a validated resume buffer to disk (call only after magic-byte checks pass).
  */
-export const persistValidatedResumeFile = (buffer, originalName) => {
+export const persistValidatedResumeFile = async (buffer, originalName) => {
   const filename = buildStoredFilename(originalName);
   const filePath = path.join(uploadDirectory, filename);
-  fs.writeFileSync(filePath, buffer);
+  await fsPromises.writeFile(filePath, buffer);
   return { filename, filePath };
 };
 
@@ -127,7 +129,7 @@ export const parseResumeUpload = (req, res, next) => {
 /**
  * Step 2: Validate magic bytes from memory, then persist only authentic files.
  */
-export const validateAndPersistResumeFile = (req, res, next) => {
+export const validateAndPersistResumeFile = asyncHandler(async (req, res, next) => {
   if (!req.file) {
     return next();
   }
@@ -147,7 +149,7 @@ export const validateAndPersistResumeFile = (req, res, next) => {
     });
   }
 
-  const { filename, filePath } = persistValidatedResumeFile(
+  const { filename, filePath } = await persistValidatedResumeFile(
     req.file.buffer,
     req.file.originalname
   );
@@ -157,7 +159,7 @@ export const validateAndPersistResumeFile = (req, res, next) => {
   req.file.destination = uploadDirectory;
 
   return next();
-};
+});
 
 /** @deprecated Use parseResumeUpload + validateAndPersistResumeFile */
 export const validateResumeFileContent = validateAndPersistResumeFile;
