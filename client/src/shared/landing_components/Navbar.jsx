@@ -12,28 +12,12 @@ import {
 } from "lucide-react";
 import Button from "../landing/Button";
 import NotificationBell from "../../modules/notifications/components/NotificationBell";
-
-const getStoredTheme = () => {
-  try {
-    return window?.localStorage?.getItem("skillssphere.theme") || "light";
-  } catch {
-    return "light";
-  }
-};
-
-const storeTheme = (theme) => {
-  try {
-    window?.localStorage?.setItem("skillssphere.theme", theme);
-  } catch {
-    // Storage can be unavailable in test or privacy-restricted environments.
-  }
-};
-
+import { useTheme } from "../contexts/ThemeContext";
 const Navbar = ({ isAuthenticated = false, user = null }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
-  const [theme, setTheme] = useState(getStoredTheme);
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,15 +41,6 @@ const Navbar = ({ isAuthenticated = false, user = null }) => {
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    document.documentElement.classList.toggle("light", theme === "light");
-
-    storeTheme(theme);
-  }, [theme]);
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-  };
 
   const navLinks = [
     { name: "Home", path: "/", icon: <Home size={20} /> },
